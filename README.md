@@ -117,17 +117,15 @@ Wireshark was used to verify:
 
 ## Payload Transformation and Validation
 
-Before transmission, the project applies an experimental reversible payload transformation:
+Before transmission, the sender applies a reversible transformation to each payload chunk as a simple encryption technique to prevent packet sniffing:
 
 1. Swap adjacent bytes.
-2. Rearrange halves of the packet chunks.
+2. Combine the first half of each chunk with the second half of the corresponding chunk counted from the end of the file.
 3. Apply XOR using a time-derived key.
 
-The receiver reverses these operations after receiving the complete packet sequence.
+The receiver then performs the inverse operations to reconstruct the original payload. The sender also transmits the SHA-256 hash of a shared key file, which the receiver compares to its local hash before accepting the file. If the received hash doesn't match the local one, then the file is not accepted.
 
-The sender and receiver also calculate the SHA-256 hash of a shared key file. The hash is transferred with the metadata and checked before the receiver accepts the file.
-
-These mechanisms were created for protocol experimentation. They should not be considered replacements for TLS, authenticated encryption, or a standard cryptographic file-transfer protocol.
+This method is just a simple encryption implementation, standard cryptographic protocols such as TLS are recommended for practical use.
 
 ## Performance Visualization
 
@@ -154,30 +152,9 @@ One recorded 50 MB test produced the following sender statistics:
 
 ![Sender performance summary](public/images/projects/reliable-udp-file-transfer/udp-transfer-sender-performance.png)
 
-The receiver recorded the completed file and reported its corresponding packet, byte, duplicate-packet, and receiving-rate statistics.
+The receiver recorded the completed file and reported its corresponding statistics.
 
 ![Receiver performance summary](public/images/projects/reliable-udp-file-transfer/udp-transfer-receiver-performance.png)
-
-## Project Structure
-
-```text
-Reliable-UDP-File-Transfer/
-├── Sender/
-│   └── sender.py
-├── Receiver/
-│   ├── receiver.py
-│   └── Notification.wav
-├── tools/
-│   ├── generate_key_file.py
-│   └── generate_test_files.py
-├── docs/
-│   └── images/
-├── requirements.txt
-├── .gitignore
-└── README.md
-```
-
-Generated test files, received files, packet plots, local key files, packet captures, and runtime state should not be committed to the repository.
 
 ## Requirements
 
@@ -217,31 +194,16 @@ After a successful transfer, the sender can be used to select and transmit anoth
 
 ## Limitations
 
-* Educational prototype rather than a production transport protocol
-* Custom payload transformation is not cryptographically secure
-* Shared time-derived key behavior requires coordinated endpoints
-* Packet IDs are limited to two bytes
-* Receiver applies a 64 MB file-size limit
-* Receiver includes Windows-specific notification and folder-opening behavior
-* Extensive per-packet terminal output reduces performance
-* Parameters are configured directly in the source code
-* No automated test suite
-* Go-Back-N retransmits multiple packets when a single packet is lost
+* Custom payload transformation is not cryptographically secure.
+* Shared time-derived key behavior requires coordinated endpoints.
+* Receiver can accept files of size 64 MB or less.
+* Terminal output for each packet reduces performance.
+* Go-Back-N retransmits multiple packets when a single packet is lost.
 
 ## Possible Improvements
 
-* Replace the custom transformation with authenticated encryption
-* Add a formal connection-establishment handshake
-* Add configurable command-line parameters
-* Replace two-byte packet IDs with larger sequence numbers
-* Add selective-repeat support
-* Add checksum or message-authentication validation per packet
-* Add automated unit and integration tests
-* Separate protocol, transport, user-interface, and metrics modules
-* Support resumable transfers
-* Add structured logging
-* Improve cross-platform compatibility
-
-## Course Context
-
-Developed for the Computer Networks course at the University of Science and Technology, Zewail City, during Spring 2023.
+* Replace the custom transformation with authenticated encryption.
+* Add a connection establishment handshake.
+* Add selective repeat to send only the lost packets.
+* Add checksum validation per packet.
+* Support resumable transfers.
