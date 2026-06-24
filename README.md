@@ -1,36 +1,28 @@
 # Reliable UDP File Transfer
 
-A Python networking project that implements reliable file transfer over UDP using Go-Back-N ARQ, cumulative acknowledgements, Reno-style congestion-window control, adaptive retransmission timeouts, packet-capture analysis, and performance reporting.
-
-> This is an educational networking prototype. Its custom payload transformation and shared-key checks are not intended to provide production-grade cryptographic security.
+A networking project that implements reliable file transfer over UDP using Go-Back-N ARQ, cumulative acknowledgements, Reno congestion-window control, adaptive retransmission timeouts. It also includes packet-capture analysis, and performance reporting.
 
 ## Demo
 
-[Watch the project demonstration on YouTube](YOUR_YOUTUBE_VIDEO_URL)
+[Watch the project demonstration on YouTube](https://youtu.be/lB6PRiQerOo)
 
-The demonstration is a silent screen recording showing file transmission between the sender and receiver, transfer progress, received-file verification, performance metrics, and generated packet-ID plots.
+The demonstration is a screen recording showing file transmission between the sender and receiver, transfer progress, and performance metrics.
 
 ![File-transfer demonstration](public/images/projects/reliable-udp-file-transfer/udp-transfer-demo-received-file.jpg)
 
 ## Main Features
 
-* Reliable file delivery over UDP
-* Go-Back-N sliding-window retransmission
-* Cumulative acknowledgements
-* Duplicate-ACK detection
-* Fast retransmission after three duplicate acknowledgements
-* Reno-style congestion-window adjustment
-* Slow start and congestion avoidance
-* Multiplicative reduction after packet loss or timeout
-* Adaptive timeout estimation using measured round-trip time
-* Separate metadata and file-data transmission phases
-* Packet and file identifiers
-* End-of-file trailer marker
-* Transfer progress bars
-* Sender and receiver performance statistics
-* Packet-ID-versus-time visualization
-* Wireshark packet-capture validation
-* Multiple sequential file transfers
+* Reliable file delivery over UDP.
+* Go-Back-N sliding-window retransmission.
+* Cumulative acknowledgements.
+* Duplicate-ACK detection.
+* Fast retransmission after three duplicate acknowledgements.
+* Reno congestion-window adjustment.
+* Slow start and congestion avoidance.
+* Multiplicative reduction after packet loss or timeout.
+* Adaptive timeout estimation using measured round-trip time.
+* Sender and receiver performance statistics.
+* Multiple sequential file transfers.
 
 ## Protocol Overview
 
@@ -51,11 +43,11 @@ File metadata is transferred before the file contents. The metadata includes:
 * File size
 * SHA-256 hash of the shared key file
 
-The receiver verifies the metadata before accepting the complete file.
+The receiver, then, verifies the metadata before accepting the complete file.
 
 ## Reliable Data Transfer
 
-The receiver accepts packets in sequence and returns cumulative acknowledgements. Out-of-order packets are discarded, while the acknowledgement for the most recently accepted packet is repeated.
+The receiver accepts packets in order and sends cumulative acknowledgements. Out-of-order packets are discarded, and the acknowledgement for the last accepted packet is repeated.
 
 The sender maintains:
 
@@ -91,18 +83,16 @@ The retransmission timeout is updated from measured round-trip times.
 
 ```text
 EstimatedRTT =
-    (1 - alpha) * EstimatedRTT
-    + alpha * SampleRTT
+        (1 - alpha) * EstimatedRTT + alpha * SampleRTT
 
 DevRTT =
-    (1 - beta) * DevRTT
-    + beta * abs(SampleRTT - EstimatedRTT)
+        (1 - beta) * DevRTT + beta * abs(SampleRTT - EstimatedRTT)
 
 TimeoutInterval =
-    EstimatedRTT + 4 * DevRTT
+        EstimatedRTT + 4 * DevRTT
 ```
 
-The implementation uses:
+The values of alpha and beta used in the implementation are:
 
 ```text
 alpha = 0.125
