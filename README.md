@@ -63,7 +63,7 @@ After three duplicate acknowledgements, the sender performs a fast retransmissio
 
 ![Fast retransmission and Wireshark capture](public/images/projects/reliable-udp-file-transfer/udp-transfer-wireshark-fast-retransmission.png)
 
-## Reno-Style Congestion Control
+## Reno Congestion Control
 
 The congestion window begins at one packet.
 
